@@ -38,7 +38,7 @@ jobs:
 
     # Construcción de la imagen Docker
     - name: Build Docker image
-      run: docker build -t ${{ secrets.DOCKER_USERNAME }}/hello-devops:${{ github.sha }} .
+      run: docker build -t ${{ secrets.DOCKER_USERNAME }}/hello-devops:${{ github.sha }} | cut -c1-7) .
 
     # Etiquetado de la imagen con el SHA del commit
     - name: Tag Docker image
