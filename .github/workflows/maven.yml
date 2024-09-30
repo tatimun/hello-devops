@@ -1,0 +1,49 @@
+name: Java CI with Maven
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    # Configuración de JDK 17
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+
+    # Construcción y pruebas con Maven
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+
+    - name: Test with Maven
+      run: mvn test
+
+    # Inicio de sesión en Docker Hub
+    - name: Log in to Docker Hub
+      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+    # Construcción de la imagen Docker
+    - name: Build Docker image
+      run: docker build -t ${{ secrets.DOCKER_USERNAME }}/hello-devops:${{ github.sha }} .
+
+    # Etiquetado de la imagen con el SHA del commit
+    - name: Tag Docker image
+      run: docker tag ${{ secrets.DOCKER_USERNAME }}/hello-devops:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/hello-devops:latest
+
+    # Subida de la imagen a Docker Hub
+    - name: Push Docker image to Docker Hub
+      run: |
+        docker push ${{ secrets.DOCKER_USERNAME }}/hello-devops:${{ github.sha }}
+        docker push ${{ secrets.DOCKER_USERNAME }}/hello-devops:latest
+
