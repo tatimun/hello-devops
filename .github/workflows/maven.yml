@@ -42,7 +42,7 @@ jobs:
 
     # Etiquetado de la imagen con el SHA del commit
     - name: Tag Docker image
-      run: docker tag ${{ secrets.DOCKER_USERNAME }}/hello-devops:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/hello-devops:latest
+      run: docker tag ${{ secrets.DOCKER_USERNAME }}/hello-devops:$(echo ${{ github.sha }} | cut -c1-7) ${{ secrets.DOCKER_USERNAME }}/hello-devops:latest
 
     # Subida de la imagen a Docker Hub
     - name: Push Docker image to Docker Hub
