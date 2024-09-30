@@ -1,5 +1,5 @@
 # Usar una imagen base de Java
-FROM openjdk:11-jre-slim
+FROM openjdk:17-jre-slim
 
 # Crear un directorio para la aplicación
 WORKDIR /app
