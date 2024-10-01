@@ -2,14 +2,14 @@ name: Deploy to Kubernetes
 
 on:
   workflow_run:
-    workflows: ["Java CI with Maven"]  # Nombre del flujo de trabajo de construcción
+    workflows: ["Java CI with Maven"]
     types:
       - completed
-  workflow_dispatch:  # Permite la ejecución manual del flujo de trabajo
+  workflow_dispatch:
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Solo si el flujo de trabajo anterior fue exitoso
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -19,62 +19,49 @@ jobs:
       - name: Checkout Configuration Manifests
         uses: actions/checkout@v2
         with:
-          repository: tatimun/configuration-manifest  # Repositorio que contiene los manifiestos
-          path: configuration-manifests  # Ruta donde se clonará el repositorio
-          token: ${{ secrets.GITHUB_TOKEN }}  # Token para acceder al repositorio
+          repository: tatimun/configuration-manifest
+          path: configuration-manifests
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update and Upgrade Packages
         run: |
           sudo apt-get update -y
           sudo apt-get upgrade -y
-
+          
       - name: Install Dependencies
         run: |
-          # Instalar dependencias necesarias
-          sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common conntrack
-
-          # Instalar Docker
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
-          sudo apt-get update -y
-          sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-
-          # Permitir ejecutar Docker sin sudo
-          sudo usermod -aG docker $USER
-
-          # Instalar cri-dockerd
-          sudo apt-get install -y git
+          sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common conntrack git
+          
+      - name: Install cri-dockerd
+        run: |
           git clone https://github.com/Mirantis/cri-dockerd.git
           cd cri-dockerd
-          sudo make install  # Instalar cri-dockerd
+          mkdir bin
+          go build -o bin/cri-dockerd
+          sudo mv bin/cri-dockerd /usr/local/bin/
 
-          # Instalar Minikube
-          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-          sudo install minikube-linux-amd64 /usr/local/bin/minikube
+      - name: Install kind
+        run: |
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/latest/kind-linux-amd64
+          chmod +x ./kind
+          sudo mv ./kind /usr/local/bin/kind
+          
+      - name: Create kind Cluster
+        run: kind create cluster
 
-          # Instalar kubectl
+      - name: Install kubectl
+        run: |
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           sudo mv kubectl /usr/local/bin/
           sudo chmod +x /usr/local/bin/kubectl
 
-          # Iniciar Minikube con driver none
-          sudo minikube start --driver=none
-
-          # Instalar JDK 17
-          sudo apt-get install -y openjdk-17-jdk
-
-          # Instalar Maven
-          sudo apt-get install -y maven
-
       - name: Deploy to Kubernetes
         run: |
-          # Aplicar los manifiestos de Kubernetes
           kubectl apply -f configuration-manifests/k8s/deployment.yaml
           kubectl apply -f configuration-manifests/k8s/service.yaml
 
       - name: Port Forward
         run: |
-          # Realizar port-forward al servicio en segundo plano
           nohup kubectl port-forward service/hello-devops-service 30000:80 &
 
       - name: Verify Installation and Deployment
@@ -83,8 +70,8 @@ jobs:
           docker --version
           echo "Kubectl version:"
           kubectl version --client
-          echo "Minikube status:"
-          minikube status
+          echo "kind cluster status:"
+          kind get clusters
           echo "Java version:"
           java -version
           echo "Maven version:"
