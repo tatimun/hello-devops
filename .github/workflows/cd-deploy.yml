@@ -66,9 +66,34 @@ jobs:
           kubectl apply -f configuration-manifests/k8s/k8s/deployment.yaml
           kubectl apply -f configuration-manifests/k8s/k8s/service.yaml
 
+
+      - name: Wait for pod to be ready
+        run: |
+           while [[ $(kubectl get pods -l app=hello-devops -o jsonpath='{.items[0].status.phase}') != "Running" ]]; do
+            echo "Waiting for pod to be in Running state..."
+            sleep 5
+           done
+
+      - name: Get Pod Name
+        id: pod_name
+        run: |
+            POD_NAME=$(kubectl get pods -l app=hello-devops -o jsonpath='{.items[0].metadata.name}')
+            echo "POD_NAME=$POD_NAME" >> $GITHUB_ENV
+
+      - name: Get Pod IP
+        run: |
+            kubectl get pod ${{ env.POD_NAME }} -o jsonpath='{.status.podIP}'
+
+      - name: Test Application with curl
+        run: |
+            echo "Testing the hello-devops app..."
+            curl http://localhost:30000
+
       - name: Port Forward
         run: |
-          nohup kubectl port-forward service/hello-devops-service 30000:80 &
+            nohup kubectl port-forward service/hello-devops-service 30000:80 &
+
+
 
       - name: Verify Installation and Deployment
         run: |
