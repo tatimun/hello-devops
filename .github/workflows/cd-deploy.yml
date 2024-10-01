@@ -74,6 +74,10 @@ jobs:
             sleep 5
            done
 
+      - name: Port Forward
+        run: |
+            nohup kubectl port-forward service/hello-devops-service 30000:80 &
+
       - name: Get Pod Name
         id: pod_name
         run: |
@@ -88,10 +92,6 @@ jobs:
         run: |
             echo "Testing the hello-devops app..."
             curl http://localhost:30000
-
-      - name: Port Forward
-        run: |
-            nohup kubectl port-forward service/hello-devops-service 30000:80 &
 
 
 
