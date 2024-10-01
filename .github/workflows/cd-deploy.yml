@@ -19,7 +19,7 @@ jobs:
       - name: Checkout Configuration Manifests
         uses: actions/checkout@v2
         with:
-          repository: tatimun/configuration  # Repositorio que contiene los manifiestos
+          repository: tatimun/configuration-manifest  # Repositorio que contiene los manifiestos
           path: configuration-manifests  # Ruta donde se clonará el repositorio
           token: ${{ secrets.GITHUB_TOKEN }}  # Token para acceder al repositorio
 
