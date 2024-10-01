@@ -23,6 +23,12 @@ jobs:
           path: configuration-manifests/k8s
           token: ${{ secrets.GITHUB_TOKEN }}
 
+
+      -  name: Verify manifests
+         run: |
+           echo "Listing files in configuration-manifests:"
+           ls -R configuration-manifests
+
       - name: Update and Upgrade Packages
         run: |
           sudo apt-get update -y
