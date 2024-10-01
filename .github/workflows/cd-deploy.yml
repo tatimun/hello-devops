@@ -91,7 +91,7 @@ jobs:
       - name: Test Application with curl
         run: |
             echo "Testing the hello-devops app..."
-            curl http://localhost:30000
+            curl http://localhost:30000/hello
 
 
 
