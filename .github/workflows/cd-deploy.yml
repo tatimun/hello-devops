@@ -57,8 +57,8 @@ jobs:
 
       - name: Deploy to Kubernetes
         run: |
-          kubectl apply -f configuration-manifests/k8s/deployment.yaml
-          kubectl apply -f configuration-manifests/k8s/service.yaml
+          kubectl apply -f configuration-manifests/deployment.yaml
+          kubectl apply -f configuration-manifests/service.yaml
 
       - name: Port Forward
         run: |
