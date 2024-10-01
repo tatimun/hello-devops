@@ -19,7 +19,7 @@ jobs:
       - name: Checkout Configuration Manifests
         uses: actions/checkout@v2
         with:
-          repository: tatimun/configuration-manifest  # Repositorio que contiene los manifiestos
+          repository: tatimun/configuration  # Repositorio que contiene los manifiestos
           path: configuration-manifests  # Ruta donde se clonará el repositorio
           token: ${{ secrets.GITHUB_TOKEN }}  # Token para acceder al repositorio
 
@@ -42,6 +42,12 @@ jobs:
           # Permitir ejecutar Docker sin sudo
           sudo usermod -aG docker $USER
 
+          # Instalar cri-dockerd
+          sudo apt-get install -y git
+          git clone https://github.com/Mirantis/cri-dockerd.git
+          cd cri-dockerd
+          sudo make install  # Instalar cri-dockerd
+
           # Instalar Minikube
           curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
           sudo install minikube-linux-amd64 /usr/local/bin/minikube
@@ -50,11 +56,6 @@ jobs:
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           sudo mv kubectl /usr/local/bin/
           sudo chmod +x /usr/local/bin/kubectl
-
-          # Instalar crictl
-          CRICTL_VERSION="v1.26.0"  # Cambia a la versión que necesites
-          sudo curl -L "https://github.com/kubernetes-sigs/cri-tools/releases/download/$CRICTL_VERSION/crictl-$CRICTL_VERSION-linux-amd64.tar.gz" -o /tmp/crictl.tar.gz
-          sudo tar -C /usr/local/bin -xzvf /tmp/crictl.tar.gz
 
           # Iniciar Minikube con driver none
           sudo minikube start --driver=none
@@ -88,4 +89,3 @@ jobs:
           java -version
           echo "Maven version:"
           mvn -version
-
