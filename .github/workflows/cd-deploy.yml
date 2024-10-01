@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: tatimun/configuration-manifest
-          path: configuration-manifests
+          path: configuration-manifests/k8s
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update and Upgrade Packages
@@ -57,8 +57,8 @@ jobs:
 
       - name: Deploy to Kubernetes
         run: |
-          kubectl apply -f configuration-manifests/deployment.yaml
-          kubectl apply -f configuration-manifests/service.yaml
+          kubectl apply -f configuration-manifests/k8s/deployment.yaml
+          kubectl apply -f configuration-manifests/k8s/service.yaml
 
       - name: Port Forward
         run: |
